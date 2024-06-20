@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  nifi:
+    cap_add:
+      - NET_ADMIN # low port bindings
+    image: apache/nifi
+    container_name: nifi
+    environment:
+      - SINGLE_USER_CREDENTIALS_USERNAME=admin
+      - SINGLE_USER_CREDENTIALS_PASSWORD=ctsBtRBKHRAx69EqUghvvgEvjnaLjFEB
+      - NIFI_WEB_HTTP_PORT=8080 
+      - NIFI_WEB_HTTP_HOST=0.0.0.0
+    ports:
+      - "8080:8080/tcp" # HTTP interface
+      - "8443:8443/tcp" # HTTPS interface
+      - "514:514/tcp" # Syslog
+      - "514:514/udp" # Syslog
+      - "2055:2055/udp" # NetFlow
+    volumes:
+      - nifi-conf:/opt/nifi/nifi-current/conf
+      - nifi_flowfile:/opt/nifi/nifi-current/flowfile_repository
+      - nifi_content:/opt/nifi/nifi-current/content_repository
+    restart: unless-stopped
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: nifi
+      POSTGRES_PASSWORD: nifidemo123
+      POSTGRES_DB: nifi
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    volumes:
+      - ./dataset:/dataset    
